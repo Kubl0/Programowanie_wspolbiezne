@@ -3,14 +3,18 @@ import os
 
 def main():
     while True:
-        while not os.path.exists("input.txt"):
-            pass
-        f = open("input.txt", "r")
-        value = f.read()
-        f.close()
-        os.remove("input.txt")
-        result = int(value) * 2
+        result = int(getInputFromFile()) * 2
         saveToFile(str(result))
+
+
+def getInputFromFile():
+    while not os.path.exists("input.txt"):
+        pass
+    f = open("input.txt", "r")
+    value = f.read()
+    f.close()
+    os.remove("input.txt")
+    return value
 
 
 def saveToFile(number):
