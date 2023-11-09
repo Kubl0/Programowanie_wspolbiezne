@@ -13,7 +13,7 @@ def process_file(file_name, queue):
                 p.join()
             else:
                 queue.put(line)
-    print(queue)
+
 
 
 def count_occurences(start_file, word):
@@ -23,9 +23,11 @@ def count_occurences(start_file, word):
     p.join()
 
     count = 0
+
     while not queue.empty():
         line = queue.get()
         count += line.split().count(word)
+        print(line.strip())
 
     return count
 
@@ -34,4 +36,4 @@ if __name__ == "__main__":
     start_file = "mainInput.txt"
     target_word = "Stoi"
     result = count_occurences(start_file, target_word)
-    print(f"Word '{target_word}' occurs {result} times in {start_file}")
+    print(f"\nWord '{target_word}' occurs {result} times in {start_file}")
