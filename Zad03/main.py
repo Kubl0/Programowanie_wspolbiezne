@@ -7,18 +7,17 @@ def process_file(file_name, queue):
 
         for line in file:
             if line.startswith("\\input{"):
-                subfile = line.split("{")[1].split("}")[0]
-                p = Process(target=process_file, args=(subfile, queue))
+                sub_file = line.split("{")[1].split("}")[0]
+                p = Process(target=process_file, args=(sub_file, queue))
                 p.start()
                 p.join()
             else:
                 queue.put(line)
 
 
-
-def count_occurences(start_file, word):
+def count_occurrences(file, word):
     queue = Queue()
-    p = Process(target=process_file, args=(start_file, queue))
+    p = Process(target=process_file, args=(file, queue))
     p.start()
     p.join()
 
@@ -35,5 +34,5 @@ def count_occurences(start_file, word):
 if __name__ == "__main__":
     start_file = "mainInput.txt"
     target_word = "Stoi"
-    result = count_occurences(start_file, target_word)
+    result = count_occurrences(start_file, target_word)
     print(f"\nWord '{target_word}' occurs {result} times in {start_file}")
