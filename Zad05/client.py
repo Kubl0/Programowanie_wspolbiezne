@@ -1,23 +1,21 @@
-import os
 import sysv_ipc
+import os
 
-SERVER_INPUT_KEY = 1234
 
-SERVER_OUTPUT_KEY = 5678
+def main():
+    input_queue_key = 1234
+    output_queue_key = 4321
 
-client_pid = os.getpid()
+    input_queue = sysv_ipc.MessageQueue(input_queue_key, sysv_ipc.IPC_CREAT)
+    output_queue = sysv_ipc.MessageQueue(output_queue_key, sysv_ipc.IPC_CREAT)
 
-input_queue = sysv_ipc.MessageQueue(client_pid, sysv_ipc.IPC_CREAT)
-output_queue = sysv_ipc.MessageQueue(client_pid, sysv_ipc.IPC_CREAT)
+    word = input("Podaj słowo do przetłumaczenia: ")
 
-word_to_translate = "cat"
+    input_queue.send(word.encode('utf-8'), type=os.getpid())
 
-input_queue.send(str(client_pid).encode())
-input_queue.send(word_to_translate.encode())
+    response, _ = output_queue.receive(type=os.getpid())
+    print(f"Odpowiedź serwera:{response.decode('utf-8')}")
 
-response, msg_type = output_queue.receive(type=client_pid)
 
-print(f"Odpowiedź od serwera: {response.decode().split(':')[-1]}")
-
-input_queue.remove()
-output_queue.remove()
+if __name__ == "__main__":
+    main()
