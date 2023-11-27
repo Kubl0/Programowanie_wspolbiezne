@@ -22,11 +22,13 @@ def main():
 
     while True:
         message, t = input_queue.receive()
-        time.sleep(3)
+        time.sleep(10)
         word = message.decode("utf-8")
         translation = translate(word)
 
-        response = f"{os.getpid()}:{translation}"
+        client_pid = t
+
+        response = f"{client_pid}:{translation}"
         output_queue.send(response.encode("utf-8"), type=t)
 
 
