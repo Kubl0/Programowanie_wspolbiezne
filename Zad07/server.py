@@ -11,17 +11,13 @@ def determine_winner(players):
     if player1_choice == player2_choice:
         return "Remis"
     elif (
-        (player1_choice == "k" and player2_choice == "n")
-        or (player1_choice == "n" and player2_choice == "p")
-        or (player1_choice == "p" and player2_choice == "k")
+            (player1_choice == "k" and player2_choice == "n")
+            or (player1_choice == "n" and player2_choice == "p")
+            or (player1_choice == "p" and player2_choice == "k")
     ):
         return player1_id
     else:
         return player2_id
-
-
-def reset_scores():
-    return {"123": 0, "124": 0}
 
 
 def server():
@@ -34,34 +30,45 @@ def server():
     print("Serwer nasłuchuje na porcie", port)
 
     players = {}
-    scores = reset_scores()
 
     counter = 0
+    scores = []
 
     while True:
+
         data, addr = server_socket.recvfrom(1024)
         player_choice, player_id = data.decode().split(",")
 
-        if player_choice != "start":
+        if player_choice == "start":
+            scores.append({player_id: 0})
+
+        if player_choice != "start" and counter < 2:
             counter += 1
-        print(counter)
 
         print("Otrzymano:", player_choice, player_id)
         players[player_id] = {"choice": player_choice, "addr": addr}
 
-        if counter==2:
-            winner = determine_winner(players)
-
+        if len(players) == 2:
             player1_id = list(players.keys())[0]
             player2_id = list(players.keys())[1]
             player1_addr = players[player1_id]["addr"]
             player2_addr = players[player2_id]["addr"]
+
+        if player_choice == "end":
+            print("Koniec")
+            print(scores)
+            server_socket.sendto("Koniec".encode(), player1_addr)
+            server_socket.sendto("Koniec".encode(), player2_addr)
+            break
+
+        if counter == 2:
+            winner = determine_winner(players)
             server_socket.sendto(winner.encode(), player1_addr)
             server_socket.sendto(winner.encode(), player2_addr)
+            counter = 0
+            scores[-1][winner] += 1
+            print("Score:", scores)
 
-            counter=0
-            players = {}
-            scores = reset_scores()
 
 if __name__ == "__main__":
     server()

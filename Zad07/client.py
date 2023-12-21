@@ -25,10 +25,12 @@ def client(id):
             print("Koniec")
             break
 
-
         client_socket.sendto(f"{choice}, {id}".encode(), (host, port))
 
         result, _ = client_socket.recvfrom(1024)
+        result = result.decode()
+        result = result.strip()
+        result = int(result)
         if result == "Remis":
             print(result)
         elif result == id:
@@ -38,8 +40,7 @@ def client(id):
 
     client_socket.close()
 
+
 if __name__ == "__main__":
-    id = random.randint(1,100)
+    id = random.randint(1, 100)
     client(id)
-
-
