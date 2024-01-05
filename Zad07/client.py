@@ -11,6 +11,7 @@ def choose():
 
 
 def client(id):
+    print("Twoj ID:", id)
     host = "127.0.0.1"
     port = 55555
 
@@ -18,10 +19,13 @@ def client(id):
 
     client_socket.sendto(f"start, {id}".encode(), (host, port))
 
+    scores = {"won": 0, "lost": 0, "draw": 0}
+
     while True:
         choice = choose()
 
         if choice.lower() == "end":
+            client_socket.sendto(f"end, {id}".encode(), (host, port))
             print("Koniec")
             break
 
@@ -30,13 +34,21 @@ def client(id):
         result, _ = client_socket.recvfrom(1024)
         result = result.decode()
         result = result.strip()
-        result = int(result)
+
         if result == "Remis":
             print(result)
-        elif result == id:
+            scores["draw"] += 1
+        elif result == "Koniec":
+            print("Koniec")
+            break
+        elif int(result) == id:
             print("Wygrałeś!")
+            scores["won"] += 1
         else:
             print("Przegrałeś!")
+            scores["lost"] += 1
+
+        print("Wyniki:", scores)
 
     client_socket.close()
 
