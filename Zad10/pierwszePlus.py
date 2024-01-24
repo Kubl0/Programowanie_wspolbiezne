@@ -19,7 +19,7 @@ def create_mlp(r):
     return mlp
 
 
-def znajdz_pierwsze(l, r, mlp):
+def find_primes(l, r, mlp):
     primes = set()
     s = math.ceil(math.sqrt(r))
     for i in range(l, r + 1):
@@ -41,7 +41,7 @@ if __name__ == '__main__':
 
     print("Start sequential")
     start_s = time.time()
-    solution1 = znajdz_pierwsze(left, right, mlp)
+    solution1 = find_primes(left, right, mlp)
     end_s= time.time() - start_s
     print("Czas sequential: ", end_s)
 
@@ -52,7 +52,7 @@ if __name__ == '__main__':
         for i in range(processes):
             components.append([left + i * part, left + (i + 1) * part, mlp])
         start = time.time()
-        solution2 = p.starmap(znajdz_pierwsze, components)
+        solution2 = p.starmap(find_primes, components)
         end2 = time.time() - start
 
     print("Parallel: ", end2)
