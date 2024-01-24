@@ -1,83 +1,59 @@
 import math
-import multiprocessing
 import time
+from multiprocessing import Pool
 
 
-def is_prime(num):
-    if num < 2:
-        return False
-    for i in range(2, int(math.sqrt(num)) + 1):
-        if num % i == 0:
+def is_prime(k):
+    for i in range(2, int(math.sqrt(k)) + 1):
+        if k % i == 0:
             return False
     return True
 
 
-def sequential_primes(start, end):
-    primes = []
-    sqrt_end = int(math.sqrt(end))
+def create_mlp(r):
+    mlp = []
+    s = math.ceil(math.sqrt(r))
+    for i in range(2, s + 1):
+        if is_prime(i):
+            mlp.append(i)
+    return mlp
 
-    for num in range(2, sqrt_end + 1):
-        if is_prime(num):
-            primes.append(num)
 
-    with multiprocessing.Pool() as pool:
-        primes += pool.map(partial_check_prime, range(max(sqrt_end + 1, start), end + 1))
-
+def znajdz_pierwsze(l, r, mlp):
+    primes = set()
+    s = math.ceil(math.sqrt(r))
+    for i in range(l, r + 1):
+        for p in mlp:
+            if i % p == 0:
+                break
+            if p * p > i:
+                primes.add(i)
+                break
+        primes.add(i)
     return primes
 
 
-def partial_check_prime(num):
-    for i in range(2, int(math.sqrt(num)) + 1):
-        if num % i == 0:
-            return False
-    return True
+if __name__ == '__main__':
+    left = 1000000
+    right = 2000000
+    mlp = create_mlp(right)
+    processes = 4
 
+    print("Start sequential")
+    start_s = time.time()
+    solution1 = znajdz_pierwsze(left, right, mlp)
+    end_s= time.time() - start_s
+    print("Czas sequential: ", end_s)
 
-def parallel_primes(start, end, num_processes, shared_data):
-    global sqrt_end_primes
-    sqrt_end_primes = shared_data
+    print("Start parallel")
+    with Pool(processes) as p:
+        components = []
+        part = (right - left) // processes
+        for i in range(processes):
+            components.append([left + i * part, left + (i + 1) * part, mlp])
+        start = time.time()
+        solution2 = p.starmap(znajdz_pierwsze, components)
+        end2 = time.time() - start
 
-    primes = []
-
-    with multiprocessing.Pool(num_processes, initializer=init_shared_data, initargs=(sqrt_end_primes,)) as pool:
-        primes += pool.map(partial_check_prime_parallel, range(max(sqrt_end_primes[-1] + 1, start), end + 1))
-
-    primes += sqrt_end_primes
-
-    return primes
-
-
-def init_shared_data(data):
-    global sqrt_end_primes
-    sqrt_end_primes = data
-
-
-def partial_check_prime_parallel(num):
-    for prime in sqrt_end_primes:
-        if num % prime == 0:
-            return False
-    return True
-
-
-def main():
-    start = 1
-    end = 10000
-    num_processes = 4
-
-    start_time = time.time()
-    sequential_result = sequential_primes(start, end)
-    sequential_time = time.time() - start_time
-
-    start_time = time.time()
-    parallel_result = parallel_primes(start, end, num_processes, sequential_result[:])
-    parallel_time = time.time() - start_time
-
-    # print("Sequential primes:", sequential_result)
-    # print("Parallel primes:", parallel_result)
-
-    print("Sequential time:", sequential_time)
-    print("Parallel time:", parallel_time)
-
-
-if __name__ == "__main__":
-    main()
+    print("Parallel: ", end2)
+    print("Better by: ", round(end_s / end2 * 100) , "%")
